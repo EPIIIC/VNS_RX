@@ -1,0 +1,48 @@
+#include <zephyr/dt-bindings/gpio/gpio.h>
+#include <zephyr/dt-bindings/regulator/nrf5x.h>
+/delete-node/ &arduino_header;
+/delete-node/ &arduino_adc;
+/ {
+    model = "VNS RX";
+    /delete-node/ leds;
+    /delete-node/ pwmleds;
+    /delete-node/ buttons;
+    /delete-node/ aliases;
+    chosen {
+        /delete-property/ zephyr,console;
+        /delete-property/ zephyr,shell-uart;
+        /delete-property/ zephyr,uart-mcumgr;
+        /delete-property/ zephyr,bt-mon-uart;
+        /delete-property/ zephyr,code-partition;
+    };
+    /* Confirmed by the user on 2026-11-02: same wiring as legacy VNS_nRF.
+     * This receiver has no external voltage-monitor circuit. */
+    zephyr,user {
+        iset-gpios = <&gpio0 18 GPIO_ACTIVE_HIGH>;
+        stim-enable-gpios = <&gpio0 16 GPIO_ACTIVE_LOW>;
+        pulse-led-gpios = <&gpio0 12 GPIO_ACTIVE_HIGH>;
+    };
+};
+&reg { regulator-initial-mode = <NRF5X_REG_MODE_LDO>; };
+&uicr { /delete-property/ gpio-as-nreset; };
+&uart0 { status = "disabled"; };
+&i2c0 { status = "disabled"; };
+&i2c1 { status = "disabled"; };
+&spi0 { status = "disabled"; };
+&spi1 { status = "disabled"; };
+&spi2 {
+    status = "disabled";
+    /* The DK CS references arduino_header, deleted above. Disabled nodes must
+     * still have valid phandles, so remove the inherited DK-only reference. */
+    /delete-property/ cs-gpios;
+};
+&nfct { status = "disabled"; };
+&adc { status = "disabled"; };
+&gpiote { status = "okay"; };
+&wdt0 { status = "okay"; };
+&pwm0 { status = "disabled"; };
+/* TIMER1 supplies the LED carrier directly through nrfx/PPI. */
+&timer1 { status = "disabled"; };
+&timer2 { status = "disabled"; };
+&timer3 { status = "disabled"; };
+&timer4 { status = "disabled"; };
